@@ -11,12 +11,30 @@ pub fn parse_string<'a>(input: &'a str) -> Vec<&'a str> {
 }
 
 pub fn parse_string_with_commands<'a>(input: &'a str) -> Vec<&'a str> {
+    let re = Regex::new(r"mul\(\d+,\d+\)|do\(\)|don't\(\)").unwrap();
     let mut results = vec![];
+    let captures = re.captures_iter(input);
+    for cap in captures {
+        results.push(cap.get(0).unwrap().as_str());
+    }
     results
 }
 
-fn process_commands(mul_strings: Vec<&str>) -> Vec<&str> {
+pub fn process_commands(mul_strings: Vec<&str>) -> Vec<&str> {
     let mut results = vec![];
+    let mut accept_current = true;
+    for string in mul_strings {
+        if string == "don't()" {
+            accept_current = false;
+            continue;
+        } else if string == "do()" {
+            accept_current = true;
+            continue;
+        }
+        if accept_current {
+            results.push(string);
+        }
+    }
     results
 }
 
@@ -28,7 +46,7 @@ pub fn parse_mul(mul_string: &str) -> (i128, i128) {
     (x, y)
 }
 
-pub fn mul_strings_to_result_one(mul_strings: Vec<&str>) -> i128 {
+pub fn mul_strings_to_result(mul_strings: Vec<&str>) -> i128 {
     let mut result = 0;
     for mul_string in mul_strings {
         let (x, y) = parse_mul(mul_string);
@@ -97,14 +115,14 @@ pub mod tests {
     fn test_mul_strings_to_result_one() {
         let input = vec!["mul(1,2)", "mul(3,4)", "mul(5,6)"];
         let expected = 1 * 2 + 3 * 4 + 5 * 6;
-        assert_eq!(mul_strings_to_result_one(input), expected);
+        assert_eq!(mul_strings_to_result(input), expected);
     }
 
     #[test]
     fn test_mul_strings_test_input() {
         let input = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
         let expected = 161;
-        assert_eq!(mul_strings_to_result_one(parse_string(input)), expected);
+        assert_eq!(mul_strings_to_result(parse_string(input)), expected);
     }
 
     #[test]

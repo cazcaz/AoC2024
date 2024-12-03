@@ -10,7 +10,6 @@ struct IncreasingTracker {
 fn main() {
     let reports = get_reports();
     let result1 = solution_one(reports.clone());
-    println!("Starting problem 2");
     let result2 = solution_two(reports);
     println!("{result1}");
     println!("{result2}");
@@ -19,13 +18,12 @@ fn main() {
 fn solution_one<'a>(reports: Vec<Vec<i32>>) -> i32 {
     let mut result = 0;
     for list in &reports {
-        match validate_list_with_dampener(list.clone(), false) {
+        match validate_list(list.clone()) {
             Ok(_) => {
                 result += 1;
             }
             Err(err) => {
-                println!("Error validating list: {err}");
-                dbg!(list);
+                // println!("Error validating list: {err}");
             }
         }
     }
@@ -35,13 +33,12 @@ fn solution_one<'a>(reports: Vec<Vec<i32>>) -> i32 {
 fn solution_two<'a>(reports: Vec<Vec<i32>>) -> i32 {
     let mut result = 0;
     for list in &reports {
-        match validate_list_with_dampener(list.clone(), true) {
+        match validate_list_with_dampener(list.clone()) {
             Ok(_) => {
                 result += 1;
             }
             Err(err) => {
-                println!("Error validating list: {err}");
-                dbg!(list);
+                // println!("Error validating list: {err}");
             }
         }
     }
@@ -78,7 +75,63 @@ fn abs(a: i32) -> i32 {
     }
 }
 
-fn validate_list_with_dampener(list: Vec<i32>, dampen: bool) -> Result<(), &'static str> {
+fn validate_list_with_dampener(list: Vec<i32>) -> Result<(), &'static str> {
+    let mut last = list[0];
+    let mut increasing = IncreasingTracker {
+        set: false,
+        increasing: false,
+    };
+
+    let mut new_list = list.clone();
+    new_list.remove(0);
+    match validate_list(new_list) {
+        Ok(_) => return Ok(()),
+        Err(_) => (),
+    }
+
+    for (i, num) in list.iter().enumerate() {
+        if i == 0 {
+            continue;
+        }
+        let diff = *num - last;
+        if diff == 0 {
+            let mut new_list = list.clone();
+            new_list.remove(i);
+            match validate_list(new_list) {
+                Ok(_) => return Ok(()),
+                Err(_) => (),
+            }
+        }
+        if !increasing.set {
+            increasing.increasing = diff > 0;
+            increasing.set = true;
+        } else {
+            if increasing.increasing != (diff > 0) {
+                let mut new_list = list.clone();
+                new_list.remove(i);
+                match validate_list(new_list) {
+                    Ok(_) => return Ok(()),
+
+                    Err(_) => (),
+                }
+            }
+        }
+        if abs(diff) > 3 {
+            let mut new_list = list.clone();
+            new_list.remove(i);
+            match validate_list(new_list) {
+                Ok(_) => return Ok(()),
+
+                Err(_) => (),
+            }
+        }
+        last = *num;
+    }
+
+    validate_list(list)
+}
+
+fn validate_list(list: Vec<i32>) -> Result<(), &'static str> {
     let mut last = list[0];
     let mut increasing = IncreasingTracker {
         set: false,
@@ -90,14 +143,6 @@ fn validate_list_with_dampener(list: Vec<i32>, dampen: bool) -> Result<(), &'sta
         }
         let diff = *num - last;
         if diff == 0 {
-            if dampen {
-                let mut new_list = list.clone();
-                new_list.remove(i);
-                dbg!(list);
-                dbg!(&new_list);
-                return validate_list_with_dampener(new_list, false);
-                continue;
-            }
             return Err("Duplicate number");
         }
         if !increasing.set {
@@ -105,30 +150,13 @@ fn validate_list_with_dampener(list: Vec<i32>, dampen: bool) -> Result<(), &'sta
             increasing.set = true;
         } else {
             if increasing.increasing != (diff > 0) {
-                if dampen {
-                    let mut new_list = list.clone();
-                    new_list.remove(i);
-                    dbg!(list);
-                    dbg!(&new_list);
-                    return validate_list_with_dampener(new_list, false);
-                    continue;
-                }
                 return Err("Change of increase");
             }
         }
         if abs(diff) > 3 {
-            if dampen {
-                let mut new_list = list.clone();
-                new_list.remove(i);
-                dbg!(list);
-                dbg!(&new_list);
-                return validate_list_with_dampener(new_list, false);
-                continue;
-            }
             return Err("Too big of a difference");
         }
         last = *num;
     }
-
     Ok(())
 }

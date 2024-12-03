@@ -1,1 +1,1 @@
-D:\AoC2024\p3\target\debug\p3.exe: D:\AoC2024\p3\src\lib.rs D:\AoC2024\p3\src\main.rs
+C:\Users\callu\Documents\Coding\ Projects\AoC2024\p3\target\debug\p3.exe: C:\Users\callu\Documents\Coding\ Projects\AoC2024\p3\src\lib.rs C:\Users\callu\Documents\Coding\ Projects\AoC2024\p3\src\main.rs
