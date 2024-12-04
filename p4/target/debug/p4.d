@@ -1,0 +1,1 @@
+C:\Users\callu\Documents\Coding\ Projects\AoC2024\p4\target\debug\p4.exe: C:\Users\callu\Documents\Coding\ Projects\AoC2024\p4\src\lib.rs C:\Users\callu\Documents\Coding\ Projects\AoC2024\p4\src\main.rs
