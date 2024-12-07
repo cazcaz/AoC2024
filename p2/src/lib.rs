@@ -1,3 +1,4 @@
+use test_helpers;
 struct IncreasingTracker {
     set: bool,
     increasing: bool,
@@ -79,9 +80,7 @@ mod tests {
             vec![1, 3, 6, 7, 9],
         ];
         let expected = vec![true, false, false, true, true, true];
-        for (i, test) in input.iter().enumerate() {
-            assert_eq!(validate_list_with_damp(&test), expected[i]);
-        }
+        test_helpers::test_function(input, expected, validate_list_with_damp);
     }
 
     #[test]
@@ -95,9 +94,7 @@ mod tests {
             vec![1, 3, 6, 7, 9],
         ];
         let expected = vec![true, false, false, false, false, true];
-        for (i, test) in input.iter().enumerate() {
-            assert_eq!(validate_list(&test), expected[i]);
-        }
+        test_helpers::test_function(input, expected, validate_list);
     }
 
     #[test]
@@ -116,9 +113,7 @@ mod tests {
             vec![0, 0, 0, 0],
             vec![5, -1, -1, -1],
         ];
-        for (i, test) in input.iter().enumerate() {
-            assert_eq!(create_boundary(&test), expected[i]);
-        }
+        test_helpers::test_function(input, expected, create_boundary);
     }
 
     #[test]
@@ -133,14 +128,15 @@ mod tests {
             vec![-1, -2, -1, -3],
         ];
         let expected: Vec<bool> = vec![true, false, false, false, true, false, true];
-        for (i, test) in input.iter().enumerate() {
-            println!("Doing case {i}");
-            assert_eq!(validate_boundary(&test), expected[i]);
-        }
+        test_helpers::test_function(input, expected, validate_boundary);
     }
 
     #[test]
     fn test_dampen_level() {
+        fn unwrap_dampen(input: &(i32, Vec<i32>)) -> Vec<i32> {
+            dampen_level(&input.0, &input.1)
+        }
+
         let input: Vec<(i32, Vec<i32>)> = vec![
             (1, vec![1, 1, 1, 1]),
             (3, vec![9, -15, 9, -3, 4]),
@@ -159,9 +155,6 @@ mod tests {
             vec![1, 2, 3, 1, 2],
             vec![-1, -1, -3],
         ];
-        for (i, test) in input.iter().enumerate() {
-            println!("{0}", test.0);
-            assert_eq!(dampen_level(&test.0, &test.1), expected[i]);
-        }
+        test_helpers::test_function(input, expected, unwrap_dampen);
     }
 }
