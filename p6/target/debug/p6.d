@@ -1,0 +1,1 @@
+C:\Users\callu\Documents\Coding\ Projects\AoC2024\p6\target\debug\p6.exe: C:\Users\callu\Documents\Coding\ Projects\AoC2024\p6\src\lib.rs C:\Users\callu\Documents\Coding\ Projects\AoC2024\p6\src\main.rs

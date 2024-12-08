@@ -350,7 +350,7 @@ mod tests {
             .cloned()
             .collect(),
         );
-        let mut input: Vec<Vec<i32>> = vec![
+        let input: Vec<Vec<i32>> = vec![
             vec![75, 97, 47, 61, 53],
             vec![61, 13, 29],
             vec![97, 13, 75, 29, 47],

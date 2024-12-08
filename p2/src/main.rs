@@ -1,5 +1,4 @@
 use p2::*;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 
