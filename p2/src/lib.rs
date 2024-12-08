@@ -1,4 +1,3 @@
-use test_helpers;
 struct IncreasingTracker {
     set: bool,
     increasing: bool,
