@@ -150,14 +150,17 @@ impl Map {
     fn resolve_map(&mut self) {
         let mut cycle_map: HashMap<(i32, i32), Vec<Direction>> = HashMap::new();
         while !self.out_of_bounds() {
+            // If the direction at a seen position has already occured then we are on the same path and have a cycle
             let seen_directions: &mut Vec<Direction> =
                 cycle_map.entry(self.guard_pos).or_insert_with(Vec::new);
+
             if seen_directions.contains(&self.direction) {
                 self.cyclic = true;
                 break;
             } else {
                 seen_directions.push(self.direction.clone());
             }
+
             match self.current_pos() {
                 Location::Open => {
                     self.grid[self.guard_pos.1 as usize][self.guard_pos.0 as usize] =
@@ -198,11 +201,15 @@ pub fn solution_two(input: &String) -> i32 {
     let mut map_initial = Map::new(input);
     let initial_guard_pos = map_initial.get_guard_pos();
     map_initial.resolve_map();
+
+    // Will panic if we start on an obstructed square
     let visited_squares: Vec<(i32, i32)> = map_initial
         .get_visited()
         .into_iter()
         .filter(|pos| *pos != initial_guard_pos)
         .collect();
+
+    // Only visited squares will hit a new obstacle
     for visited in visited_squares {
         let mut new_map = Map::new(input);
         new_map.obstruct(visited);
