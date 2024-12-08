@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 #[derive(Clone, Debug)]
 enum Location {
     Visited,
@@ -6,7 +8,7 @@ enum Location {
     OutOfBounds,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 enum Direction {
     Up,
     Down,
@@ -19,6 +21,7 @@ struct Map {
     guard_pos: (i32, i32),
     grid: Vec<Vec<Location>>,
     direction: Direction,
+    cyclic: bool,
 }
 
 impl Map {
@@ -63,7 +66,12 @@ impl Map {
             grid,
             direction,
             guard_pos: pos,
+            cyclic: false,
         }
+    }
+
+    fn obstruct(&mut self, position: (i32, i32)) {
+        self.grid[position.1 as usize][position.0 as usize] = Location::Obstacle
     }
 
     fn out_of_bounds(&self) -> bool {
@@ -122,12 +130,12 @@ impl Map {
         );
     }
 
-    fn count_visited(&self) -> i32 {
-        let mut result = 0;
-        for row in &self.grid {
-            for location in row {
+    fn get_visited(&self) -> Vec<(i32, i32)> {
+        let mut result: Vec<(i32, i32)> = vec![];
+        for (y, row) in self.grid.iter().enumerate() {
+            for (x, location) in row.iter().enumerate() {
                 match location {
-                    Location::Visited => result += 1,
+                    Location::Visited => result.push((x as i32, y as i32)),
                     _ => continue,
                 }
             }
@@ -140,7 +148,16 @@ impl Map {
     }
 
     fn resolve_map(&mut self) {
+        let mut cycle_map: HashMap<(i32, i32), Vec<Direction>> = HashMap::new();
         while !self.out_of_bounds() {
+            let seen_directions: &mut Vec<Direction> =
+                cycle_map.entry(self.guard_pos).or_insert_with(Vec::new);
+            if seen_directions.contains(&self.direction) {
+                self.cyclic = true;
+                break;
+            } else {
+                seen_directions.push(self.direction.clone());
+            }
             match self.current_pos() {
                 Location::Open => {
                     self.grid[self.guard_pos.1 as usize][self.guard_pos.0 as usize] =
@@ -160,12 +177,41 @@ impl Map {
             self.step_forward();
         }
     }
+
+    fn cyclic(&self) -> bool {
+        self.cyclic
+    }
+
+    fn get_guard_pos(&self) -> (i32, i32) {
+        self.guard_pos
+    }
 }
 
 pub fn solution_one(input: &String) -> i32 {
     let mut map = Map::new(input);
     map.resolve_map();
-    map.count_visited()
+    map.get_visited().len() as i32
+}
+
+pub fn solution_two(input: &String) -> i32 {
+    let mut result = 0;
+    let mut map_initial = Map::new(input);
+    let initial_guard_pos = map_initial.get_guard_pos();
+    map_initial.resolve_map();
+    let visited_squares: Vec<(i32, i32)> = map_initial
+        .get_visited()
+        .into_iter()
+        .filter(|pos| *pos != initial_guard_pos)
+        .collect();
+    for visited in visited_squares {
+        let mut new_map = Map::new(input);
+        new_map.obstruct(visited);
+        new_map.resolve_map();
+        if new_map.cyclic() {
+            result += 1;
+        }
+    }
+    result
 }
 
 #[cfg(test)]
@@ -186,9 +232,25 @@ mod tests {
 #.........
 ......#...",
         );
+    }
 
-        let expected = 41;
+    #[test]
+    fn test_solution_two() {
+        let input = String::from(
+            "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...",
+        );
 
-        assert_eq!(solution_one(&input), expected);
+        let expected = 6;
+
+        assert_eq!(solution_two(&input), expected);
     }
 }

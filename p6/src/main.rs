@@ -5,9 +5,9 @@ use std::io::Read;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input = get_input()?;
     let result1 = solution_one(&input);
-    //let result2 = solution_two(&input);
+    let result2 = solution_two(&input);
     println!("{result1}");
-    //println!("{result2}");
+    println!("{result2}");
     Ok(())
 }
 
