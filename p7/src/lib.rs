@@ -38,10 +38,8 @@ fn resolve_computation(operands: &Vec<i128>, target: i128) -> bool {
         if resolve_computation(&op_clone, target - last) {
             return true;
         }
-        if target % last == 0 {
-            if resolve_computation(&op_clone, target / last) {
-                return true;
-            }
+        if target % last == 0 && resolve_computation(&op_clone, target / last) {
+            return true;
         }
     } else {
         panic!("Vector should not be empty");
@@ -68,14 +66,14 @@ fn resolve_computation_concatenate(operands: &Vec<i128>, target: i128) -> bool {
         if resolve_computation_concatenate(&op_clone, target - last) {
             return true;
         }
-        if target % last == 0 {
-            if resolve_computation_concatenate(&op_clone, target / last) {
+        if target % last == 0 && resolve_computation_concatenate(&op_clone, target / last) {
+            return true;
+        }
+
+        if let Ok(val) = concatenated_target(&last, &target) {
+            if resolve_computation_concatenate(&op_clone, val) {
                 return true;
             }
-        }
-        let new_target = concatenated_target(&last, &target);
-        if new_target >= 0 && resolve_computation_concatenate(&op_clone, new_target) {
-            return true;
         }
     } else {
         panic!("Vector should not be empty");
@@ -94,19 +92,19 @@ fn parse_input(input: &str) -> (i128, Vec<i128>) {
 }
 
 // This will apply the opposite of the concatenation to the RHS
-fn concatenated_target(dividend: &i128, target: &i128) -> i128 {
+fn concatenated_target<'a>(dividend: &'a i128, target: &'a i128) -> Result<i128, &'a str> {
     let mut new_target = target - dividend;
     if new_target % 10 != 0 {
-        return -1;
+        return Err("Target not valid");
     }
     if new_target < 0 {
-        return -1;
+        return Err("Target too small");
     }
     let digits = dividend.ilog(10) + 1;
     for _ in 0..digits {
         new_target /= 10;
     }
-    new_target
+    Ok(new_target)
 }
 
 #[cfg(test)]
@@ -162,10 +160,15 @@ mod tests {
     #[test]
     fn test_concatenated_target() {
         let input = vec![(6, 486), (1, 1), (187192, 25187192), (123, 456), (123, 23)];
-        let expected = vec![48, 0, 25, -1, -1];
-        fn unwrap(input: &(i128, i128)) -> i128 {
-            concatenated_target(&input.0, &input.1)
+        let expected = vec![
+            Ok(48),
+            Ok(0),
+            Ok(25),
+            Err("Target not valid"),
+            Err("Target too small"),
+        ];
+        for (i, input_val) in input.iter().enumerate() {
+            assert_eq!(concatenated_target(&input_val.0, &input_val.1), expected[i]);
         }
-        test_helpers::test_function(input, expected, unwrap);
     }
 }
