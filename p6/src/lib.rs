@@ -1,4 +1,7 @@
+use helpers::{Grid, Point2D};
 use std::collections::HashMap;
+use std::fmt;
+use std::str::FromStr;
 
 #[derive(Clone, Debug)]
 enum Location {
@@ -6,6 +9,29 @@ enum Location {
     Obstacle,
     Open,
     OutOfBounds,
+}
+
+impl FromStr for Location {
+    type Err = ParseLocationError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "^" => Ok(Location::Open),
+            ">" => Ok(Location::Open),
+            "<" => Ok(Location::Open),
+            "v" => Ok(Location::Open),
+            "#" => Ok(Location::Obstacle),
+            "." => Ok(Location::Open),
+            _ => Err(ParseLocationError),
+        }
+    }
+}
+
+#[derive(Debug)]
+struct ParseLocationError;
+impl fmt::Display for ParseLocationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Invalid character for Location")
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -17,53 +43,54 @@ enum Direction {
 }
 
 #[derive(Debug)]
+struct ParseDirectionError;
+impl fmt::Display for ParseDirectionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Invalid character for Direction")
+    }
+}
+
+impl FromStr for Direction {
+    type Err = ParseDirectionError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "^" => Ok(Direction::Up),
+            ">" => Ok(Direction::Right),
+            "<" => Ok(Direction::Left),
+            "v" => Ok(Direction::Down),
+            _ => Err(ParseDirectionError),
+        }
+    }
+}
+
+#[derive(Debug)]
 struct Map {
     guard_pos: (i32, i32),
-    grid: Vec<Vec<Location>>,
+    grid: Grid<Location>,
     direction: Direction,
     cyclic: bool,
 }
 
 impl Map {
     fn new(input: &String) -> Self {
-        let mut grid: Vec<Vec<Location>> = vec![];
         let mut direction: Direction = Direction::Up;
-        let mut pos: (i32, i32) = (0, 0);
+        let mut pos = Point2D::new(0, 0);
+        let grid = Grid::new(input);
 
         for (i, line) in input.lines().enumerate() {
-            let mut current_line: Vec<Location> = vec![];
             for (j, c) in line.chars().enumerate() {
                 match c {
-                    '.' => current_line.push(Location::Open),
-                    '#' => current_line.push(Location::Obstacle),
-                    '^' => {
-                        current_line.push(Location::Open);
-                        direction = Direction::Up;
-                        pos = (j as i32, i as i32);
-                    }
-                    '>' => {
-                        current_line.push(Location::Open);
-                        direction = Direction::Right;
-                        pos = (j as i32, i as i32);
-                    }
-                    'v' => {
-                        current_line.push(Location::Open);
-                        direction = Direction::Down;
-                        pos = (j as i32, i as i32);
-                    }
-                    '<' => {
-                        current_line.push(Location::Open);
-                        direction = Direction::Left;
-                        pos = (j as i32, i as i32);
+                    '^','>','v','<' => {
+                        direction = c.parse()?;
+                        pos = self.grid.convert_coords_readable(i as i32, j as i32);
                     }
                     _ => {}
                 }
             }
-            grid.push(current_line);
         }
 
         Self {
-            grid,
+            grid: Grid::new(input),
             direction,
             guard_pos: pos,
             cyclic: false,

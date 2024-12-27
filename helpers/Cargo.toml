@@ -1,7 +1,6 @@
 [package]
-name = "p6"
+name = "helpers"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-helpers = { path = "../helpers" } 
